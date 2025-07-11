@@ -1,0 +1,2 @@
+
+        print(len(ai.q))
