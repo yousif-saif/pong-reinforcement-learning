@@ -6,7 +6,7 @@ import pygame
 GAME_SPEED = 20
 
 if __name__ == "__main__":
-    with open("right_paddle_new.pkl", "rb") as f:
+    with open("best_right_paddle_model.pkl", "rb") as f:
         ai = pickle.load(f)
         ai.epsilon = False
 

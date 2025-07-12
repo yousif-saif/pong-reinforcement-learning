@@ -2,7 +2,7 @@ import pygame
 import math
 import random
 import time
-
+import pickle
 
 pygame.init()
 
@@ -14,17 +14,20 @@ PADDLE_SPEED = 0.2
 REPEAT_ACTION = 10
 
 
+def discretize(val, bin_size):
+    return round(val / bin_size)
+
+
 def create_state(p, opp, ball):
     sign = lambda val: 1 if val > 0 else -1
-    return [
-        round(p.y),
-        round(p.y - ball.y),
-        round(ball.x),
-        round(ball.y),
+    return (
+        discretize(p.y, 10),
+        discretize(p.y - ball.y, 10),
+        discretize(ball.x, 10),
+        discretize(ball.y, 10),
         sign(ball.Vx),
         sign(ball.Vy),
-    ]
-    
+    )
 
 def clamp(a, b, c):
     if a < b:   return b
@@ -63,7 +66,9 @@ class Player():
 
     def update(self, draw=True):
         self.handle_key_press()
-        self.rect = pygame.Rect(self.x, self.y, PADDLE_WIDTH, PADDLE_HEIGHT)
+        # self.rect = pygame.Rect(self.x, self.y, PADDLE_WIDTH, PADDLE_HEIGHT)    
+        self.rect.update(self.x, self.y, PADDLE_WIDTH, PADDLE_HEIGHT)    
+        
         
         if draw:
             self.draw()
@@ -248,9 +253,9 @@ class Game:
         
         if self.ai:
             if type(self.p1) == AI_player:
-                action1 = self.ai.choose_action(create_state(self.p1, self.p2, self.ball))
-                self.p1.move(action1, REPEAT_ACTION)
-                
+                action1 = self.left_ai.choose_action(create_state(self.p1, self.p2, self.ball))
+                self.p1.move(action1, 1)
+            
                 # for i in range(10):
                 #     self.p1.move(action1)
             
@@ -283,11 +288,18 @@ def main(p1=None, p2=None, ball=None, ai=None, speed=15):
     
     game = Game(speed, screen, ai)
     
-    # game.p1 = p1 if p1 else game.p1
+    if type(p1) == AI_player:
+        game.p1 = p1 if p1 else game.p1
+        game.p1.screen = screen
+        
+        with open("left_paddle_new_change_state2.pkl", "rb") as f:
+            left_ai = pickle.load(f)
+            game.left_ai = left_ai
+        
+        
     # game.p2 = p2 if p2 else game.p2
     # game.ball = ball if ball else game.ball
 
-    # game.p1.screen = screen
     # game.p2.screen = screen
     # game.ball.screen = screen
         
